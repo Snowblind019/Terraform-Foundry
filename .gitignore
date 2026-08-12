@@ -1,0 +1,14 @@
+# Block all nested .terraform directories anywhere in the repo
+**/.terraform/
+**/.terraform/*
+
+# Block local state files (prevent state locks and secret leaks)
+*.tfstate
+*.tfstate.*
+
+# Block sensitive variable files (where you store passwords/keys)
+*.tfvars
+*.tfvars.json
+
+# Block crash logs
+crash.log
