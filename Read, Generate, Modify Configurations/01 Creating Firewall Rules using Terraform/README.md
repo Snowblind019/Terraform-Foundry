@@ -85,17 +85,6 @@ Reading plan output for forced replacement versus in-place update is a habit wor
 
 ---
 
-## Things I'd change if this were real
-
-Since I want to end up doing cloud security, worth writing down what an auditor would flag here:
-
-- **Port 80 open to `0.0.0.0/0`** is fine for a public web server, and it's the stated architecture for this lab. It's only a finding if the thing behind it isn't meant to be public. What *is* always a finding is management ports open to the world: SSH 22, RDP 3389, database ports. That's the single most common misconfiguration in AWS and it's a one-line change in this exact file.
-- **Egress allow-all** is the AWS default and almost nobody restricts it, but restricting egress is real defense in depth. It's what stops a compromised instance from calling out to an attacker's server.
-- **No `vpc_id`** means this landed in the default VPC. The default VPC has public subnets and an internet gateway already attached, which is convenient and also why it shouldn't be running anything I care about.
-- **The local names are wrong.** `allow_tls` and `allow_tls_ipv6` came straight from the docs example. This group has nothing to do with TLS and the "ipv6" rule uses `cidr_ipv4`. Terraform doesn't care, but names that lie are worse than no names.
-
----
-
 ## Finding the right resource in the docs
 
 The lecture's method, and it's a good one. Search for the resource type by the AWS service name, then check the argument reference for whether each argument is Required or Optional. `description` and `vpc_id` are both Optional here, which is why the group applies fine without them.
