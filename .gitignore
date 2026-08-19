@@ -1,14 +1,18 @@
-# Block all nested .terraform directories anywhere in the repo
-**/.terraform/
-**/.terraform/*
+# Provider plugins. Hundreds of MB, re-downloaded by terraform init.
+.terraform/
 
-# Block local state files (prevent state locks and secret leaks)
+# State files. Plaintext record of everything Terraform manages, including
+# values that were secret when they went in.
 *.tfstate
 *.tfstate.*
+crash.log
 
-# Block sensitive variable files (where you store passwords/keys)
+# Variable files, which is where credentials usually end up.
 *.tfvars
 *.tfvars.json
 
-# Block crash logs
-crash.log
+# Saved plan output.
+*.tfplan
+
+# Keep the lock file. It pins exact provider versions and should be committed.
+!.terraform.lock.hcl
