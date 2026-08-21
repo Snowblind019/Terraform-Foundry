@@ -1,16 +1,9 @@
-variable-assignment.tf
-
-resource "aws_instance" "myec2" {
-   ami = "ami-0e670eb768a5fc3d4"
-   instance_type = "t2.micro
+# Same Mumbai AMI as the last lab, so the region has to match it.
+provider "aws" {
+  region = "ap-south-1"
 }
 
-CLI Commands
-
-terraform plan -var="instance_type=m5.large"
-
-Environment Variables in Windows
-
-Open the System Properties using following command:
-
-sysdm.cpl
+resource "aws_instance" "myec2" {
+  ami           = "ami-0e670eb768a5fc3d4"
+  instance_type = var.instance_type
+}
