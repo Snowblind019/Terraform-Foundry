@@ -1,4 +1,4 @@
-# 05 Remote-Exec Provisioner
+# 02 Remote-Exec Provisioner
 
 Practical for remote-exec. After the EC2 instance is created, Terraform connects to it over SSH and installs nginx on it.
 
