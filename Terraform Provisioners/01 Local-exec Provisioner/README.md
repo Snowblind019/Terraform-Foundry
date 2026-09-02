@@ -1,4 +1,4 @@
-# 04 Local-Exec Provisioner
+# 01 Local-Exec Provisioner
 
 First practical of the provisioner section. After the EC2 instance is created, a local-exec provisioner writes the instance IP into a file on the machine running Terraform.
 
