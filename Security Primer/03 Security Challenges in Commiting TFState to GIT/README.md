@@ -1,128 +1,59 @@
-# 03 - HashiCorp Vault and the Vault Provider
+# 03 - Storing the RDS Password in a Separate File
 
 Section 6: Security Primer
 
-Covers two videos: the HashiCorp Vault overview, and the Vault provider in Terraform. They
-share one topic and one code set, so they are documented together.
+## No video for this lab
 
-## Part 1: HashiCorp Vault overview
+There is no transcript or video for this one. The material is a configuration file and a
+password file, with a single instruction attached: keep `rds_pass.txt` outside the folder that
+`rds.tf` lives in.
 
-Vault stores secrets securely and puts access management around them. The kind of secrets
-meant here are database passwords, AWS access and secret keys, API tokens, encryption keys,
-and similar.
+Everything below is read off the code itself. Nothing here comes from an instructor, and where
+this connects to other labs in the section that is my own reading rather than something that
+was stated.
 
-The problem it addresses is that in a lot of organizations these values end up sitting in
-someone's notepad.
+## The files
 
-### Dynamic secrets
+Two files:
 
-The feature the video spends most of its time on. Vault generates credentials on request and
-hands them back with a lease, then deletes them when the lease expires. The user has to come
-back and request a fresh set.
+- `rds.tf`, which creates an `aws_db_instance`
+- `rds_pass.txt`, holding the password as its only contents
 
-The instructor's example from a previous job: developers requesting access to a developer
-database got a username and password from Vault that was valid for 24 hours. The next day
-they had to request new credentials. Rotating on that cadence cuts down the window for a
-database breach or a leak of confidential data.
-
-### GUI demo
-
-Vault started as a CLI-only tool, which made it a harder thing to learn. It now has a GUI,
-and the demo runs through it.
-
-Secret engines shown, all from the console:
-
-- **AWS.** A developer clicks Generate and Vault returns an access key and a secret key for
-  local testing. Vault deletes them later depending on the configuration, so the next day the
-  developer generates a new pair.
-- **Database.** A request returns a username and password with a lease duration of 1 hour.
-  After that they are removed. The developer either regenerates or renews the lease before it
-  expires.
-- **Linux instance login.** Vault supplies a username and a key the developer uses to log in.
-
-Beyond dynamic secrets, the console demo also shows:
-
-- **Encryption.** An application that needs encrypt and decrypt functionality can call Vault
-  instead of building the logic itself. Plain text in, encrypted data out, and Vault decrypts
-  it again later.
-- Hashing data and random data generation, mentioned but not demonstrated.
-
-### The operational argument
-
-With 200 to 300 developers in an organization all needing database credentials, the database
-administrator spends a large amount of time just issuing them. Once Vault is integrated with
-the backends, it takes that over, and access management in general moves to Vault.
-
-The video defers the detail of each Vault feature to subsequent videos.
-
-## Part 2: The Vault provider
-
-Terraform has hundreds of providers. Vault is one of them, and it lets Terraform read from,
-write to, and configure a Vault instance.
-
-The use case: a secret in Vault at `secret/db_creds` holding a database username and
-password. If you want to create a database whose credentials are the ones held in Vault, you
-inject them into Terraform rather than writing them into the configuration.
-
-The configuration has three parts:
-
-1. A `vault` provider block with the `address` of the running Vault instance.
-2. A `vault_generic_secret` data source pointing at the path where the secret lives,
-   `secret/db_creds`.
-3. An output referencing that data source, so the fetched value can be confirmed.
-
-### Walkthrough
-
-In the Vault console, a secret was created under `secret` called `db_creds`, with the secret
-data holding a username of `admin` and a password of `password123`. The contents can be read
-back directly from Vault given the right permission.
-
-In Terraform:
+The password is not written into `rds.tf`. It is pulled in at apply time:
 
 ```
-terraform init
+password = file("../rds_pass.txt")
 ```
 
-This downloads the Vault provider.
+`file()` reads the contents of the path given and returns them as a string. The `../` means
+one directory up from wherever `rds.tf` sits, which is the point of the instruction to keep
+the password file outside the Terraform folder.
 
-```
-terraform apply
-```
+## What this achieves
 
-First attempt failed:
+The password is no longer in the `.tf` file, so it is not in whatever gets committed to
+version control along with the configuration, assuming the password file stays outside that
+directory.
 
-```
-No secret found at secret/db-creds
-```
+## What it does not achieve
 
-A typo. The path was written with a hyphen rather than an underscore. Corrected to
-`secret/db_creds` and applied again.
+The password still ends up in `terraform.tfstate` in plain text once applied, the same way it
+does with `sensitive = true` in lab 02. `file()` changes where the value is read from, not
+where it is written to.
 
-The apply succeeded. The output showed nothing because `sensitive` was set on the output
-block. The fetched value was confirmed instead by opening the Terraform state file, where the
-outputs section held `admin` and `password123`.
+## Notes on the code as supplied
 
-That is the shape of the real use case: when creating a database or an RDS instance, the
-username and password come from Vault rather than from the configuration.
+- The `provider "aws"` block is missing its closing brace, so the file will not parse as
+  given.
+- `access_key` and `secret_key` are hardcoded in the provider block as `YOUR-KEY`
+  placeholders. Replace them, or drop both lines and let Terraform pick up credentials from
+  the environment or the AWS config file.
+- `name` is used on the `aws_db_instance` resource. Other labs in this section use `db_name`
+  for the same thing.
+- `skip_final_snapshot = "true"` is quoted here. Terraform accepts the string and converts it.
 
-### The AWS secret engine with Terraform
+## Cost
 
-Vault's AWS engine generates IAM user credentials. Clicking Generate in the console returns
-an access key and a secret key.
-
-Terraform can be pointed at those, which means no access key or secret key is hardcoded in
-the Terraform configuration. Terraform connects to Vault, fetches the current access and
-secret key, and uses them for its AWS operations.
-
-## Exam pointer
-
-Interacting with Vault from Terraform means any secret you read or write ends up persisted in
-the Terraform state file. Reading a secret from Vault and passing it to another service puts
-that secret in state. The state file has to be secured, otherwise the secrets are exposed
-there.
-
-## Scope note
-
-This is a Terraform course, not a Vault course, so configuring Vault from scratch is not
-covered. The instructor points at a separate dedicated Vault course based on the HashiCorp
-Vault Associate certification for that.
+`aws_db_instance` creates a real RDS instance. `db.t2.micro` with 5 GB of gp2 storage is small
+but not free past the free tier, and RDS instances bill by the hour while they exist. Destroy
+when you are done.
