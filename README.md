@@ -1,7 +1,7 @@
 # Terraform-Foundry
  
-![Status](https://img.shields.io/badge/Status-Course%20Complete-yellow)
-![Certification](https://img.shields.io/badge/Certification-Terraform%20Associate%20004-7B42BC)
+![Status](https://img.shields.io/badge/Status-Certified-brightgreen)
+![Certification](https://img.shields.io/badge/Certification-Terraform%20Associate%20004%20Passed-7B42BC)
 ![IaC](https://img.shields.io/badge/IaC-Terraform-844FBA)
 ![Cloud](https://img.shields.io/badge/Cloud-AWS-FF9900)
 ![Labs](https://img.shields.io/badge/Labs-95%20Documented-informational)
@@ -10,7 +10,8 @@ Lab notes and working code from a Terraform certification course, written up one
 I run each lab first, then document it here, so this repo is the record of what I actually did rather than a
 rewrite of the official docs.
 
-Target: HashiCorp Certified Terraform Associate (004).
+Passed the HashiCorp Certified Terraform Associate (004) exam on September 21, 2026. The course is complete
+and every lab is documented.
 
 **95 labs across 6 sections.**
 
